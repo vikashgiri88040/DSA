@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure
+typedef struct Node {
+    int coeff;
+    int exp;
+    struct Node* next;
+} Node;
+
+// Create new node
+Node* createNode(int c, int e) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->coeff = c;
+    newNode->exp = e;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Insert in sorted order (descending exponent)
+Node* insert(Node* head, int c, int e) {
+    Node* newNode = createNode(c, e);
+
+    if (head == NULL || head->exp < e) {
+        newNode->next = head;
+        return newNode;
+    }
+
+    Node* temp = head;
+    while (temp->next != NULL && temp->next->exp > e) {
+        temp = temp->next;
+    }
+
+    newNode->next = temp->next;
+    temp->next = newNode;
+
+    return head;
+}
+
+// Add two polynomials
+Node* addPoly(Node* p1, Node* p2) {
+    Node* result = NULL;
+
+    while (p1 && p2) {
+        if (p1->exp == p2->exp) {
+            result = insert(result, p1->coeff + p2->coeff, p1->exp);
+            p1 = p1->next;
+            p2 = p2->next;
+        }
+        else if (p1->exp > p2->exp) {
+            result = insert(result, p1->coeff, p1->exp);
+            p1 = p1->next;
+        }
+        else {
+            result = insert(result, p2->coeff, p2->exp);
+            p2 = p2->next;
+        }
+    }
+
+    // Remaining terms
+    while (p1) {
+        result = insert(result, p1->coeff, p1->exp);
+        p1 = p1->next;
+    }
+
+    while (p2) {
+        result = insert(result, p2->coeff, p2->exp);
+        p2 = p2->next;
+    }
+
+    return result;
+}
+
+// Display polynomial
+void display(Node* head) {
+    while (head) {
+        printf("%dx^%d", head->coeff, head->exp);
+        if (head->next)
+            printf(" + ");
+        head = head->next;
+    }
+    printf("\n");
+}
+
+// Main
+int main() {
+    Node *p1 = NULL, *p2 = NULL, *p3;
+
+    // P1 = 7x^5 + 3x^3 + 2x^2 + 8
+    p1 = insert(p1, 7, 5);
+    p1 = insert(p1, 3, 3);
+    p1 = insert(p1, 2, 2);
+    p1 = insert(p1, 8, 0);
+
+    // P2 = 3x^4 + 2x^3 + 2x^2 + 7x + 2
+    p2 = insert(p2, 3, 4);
+    p2 = insert(p2, 2, 3);
+    p2 = insert(p2, 2, 2);
+    p2 = insert(p2, 7, 1);
+    p2 = insert(p2, 2, 0);
+
+    printf("P1: ");
+    display(p1);
+
+    printf("P2: ");
+    display(p2);
+
+    p3 = addPoly(p1, p2);
+
+    printf("Result (P3): ");
+    display(p3);
+
+    return 0;
+}
